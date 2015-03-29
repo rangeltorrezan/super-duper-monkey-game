@@ -31,6 +31,7 @@ def sort_word(table_name):
     if not redis.sismember("games", table_name):
         raise LoLException('noooo!')
     redis.set(table_name+":current_word", "batata")
+    redis.expire(table_name+":current_word", 10)
     return "i've sorted! yahoo"
 
 @app.route("/games/<table_name>/<int:player>/current_word")
@@ -41,18 +42,25 @@ def current_word(table_name, player):
     if player is not None:
         if player == int(redis.get(table_name+":current_player")):
             return "lololololol...stop cheating"
-    return redis.get(table_name+":current_word")
+    word=redis.get(table_name+":current_word")
+    print word
+    if word is None:
+        raise Exception("word expired")
 
 @app.route("/games/<table_name>/<int:player>/guess/<guessed_word>")
 def guess_word(table_name, player, guessed_word):
-    word=current_word(table_name, None)
-    current_player = redis.get(table_name+":current_player")
-    print type(current_player)
     if player != int(redis.get(table_name+":current_player")):
         return "lololololol...stop talking"
+    word=None
+    try:
+        word=current_word(table_name, None)
+    except:
+        return "time is over!!!!! you loooooooooooooooooooooose"
+    current_player = redis.get(table_name+":current_player")
+    print type(current_player)
     if guessed_word == word:
         return "win"
-    return "lose"
+    return "try again"
 
 if __name__ == "__main__":
     app.run(debug=True)
