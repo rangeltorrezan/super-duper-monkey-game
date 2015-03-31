@@ -1,7 +1,7 @@
 from flask import Flask
 import redis
 redis = redis.StrictRedis(host='localhost', port=6379, db=0)
-
+# teste
 app = Flask(__name__)
 
 @app.route("/")
